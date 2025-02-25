@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent IDE</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="height: var(--header-height);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Intelligent IDE</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="fileDropdown" role="button" data-bs-toggle="dropdown">
+                            File
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="newFileBtn">New File</a></li>
+                            <li><a class="dropdown-item" href="#" id="openFileBtn">Open File</a></li>
+                            <li><a class="dropdown-item" href="#" id="saveBtn">Save</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="settingsBtn">Settings</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown">
+                            AI
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="generateCodeBtn">Generate Code</a></li>
+                            <li><a class="dropdown-item" href="#" id="completeCodeBtn">Complete Code</a></li>
+                            <li><a class="dropdown-item" href="#" id="generateTestsBtn">Generate Tests</a></li>
+                            <li><a class="dropdown-item" href="#" id="debugCodeBtn">Debug Code</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="buildDropdown" role="button" data-bs-toggle="dropdown">
+                            Build
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" id="buildProjectBtn">Build Project</a></li>
+                            <li><a class="dropdown-item" href="#" id="runTestsBtn">Run Tests</a></li>
+                            <li><a class="dropdown-item" href="#" id="deployBtn">Deploy</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="ciSettingsBtn">CI/CD Settings</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button class="btn btn-outline-success btn-sm me-2" id="aiAssistBtn">AI Assistant</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="p-3">
+                <h6>Projects</h6>
+                <div class="file-tree mt-3">
+                    <ul id="fileTree">
+                        <li><i class="bi bi-folder-fill folder-icon"></i> tests
+                            <ul>
+                                <li><i class="bi bi-file-earmark-code file-icon"></i> main.test.js</li>
+                            </ul>
+                        </li>
+                        <li><i class="bi bi-file-earmark file-icon"></i> index.html</li>
+                        <li><i class="bi bi-file-earmark file-icon"></i> package.json</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resizer for sidebar -->
+        <div class="resizer" id="sidebarResizer"></div>
+
+        <!-- Editor Container -->
+        <div class="editor-container">
+            <!-- Editor Tabs -->
+            <div class="editor-tabs">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">main.js</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">index.html</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Editor Wrapper -->
+            <div class="editor-wrapper" style="overflow: scroll;">
+                <button class="btn btn-primary btn-sm suggestion-btn" id="suggestFixBtn">Suggest Fix</button>
+                <div id="editor"></div>
+            </div>
+
+            <!-- Panel Resizer -->
+            <div class="panel-resizer" id="panelResizer"></div>
+
+            <!-- Bottom Panel -->
+            <div class="panel-container">
+                <div class="panel-header">
+                    <ul class="nav nav-tabs" id="panelTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="console-tab" data-bs-toggle="tab" data-bs-target="#console" type="button" role="tab">Console</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="problems-tab" data-bs-toggle="tab" data-bs-target="#problems" type="button" role="tab">Problems</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ai-suggestions-tab" data-bs-toggle="tab" data-bs-target="#ai-suggestions" type="button" role="tab">AI Suggestions</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button" role="tab">Tests</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ci-tab" data-bs-toggle="tab" data-bs-target="#ci" type="button" role="tab">CI/CD</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content panel-content" id="panelTabContent">
+                    <div class="tab-pane fade show active" id="console" role="tabpanel" aria-labelledby="console-tab">
+                        <div class="console-output">
+                            <div class="text-muted">// Console output will appear here</div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="problems" role="tabpanel" aria-labelledby="problems-tab">
+                        <div class="problems-list">
+                            <div class="problem-item d-flex justify-content-between">
+                                <span><i class="bi bi-exclamation-triangle text-warning"></i> Unused variable 'result' at line 7</span>
+                                <a href="#" class="text-primary">Fix</a>
+                            </div>
+                            <div class="problem-item d-flex justify-content-between mt-2">
+                                <span><i class="bi bi-x-circle text-danger"></i> ReferenceError: calculateTotal is not defined at line 19</span>
+                                <a href="#" class="text-primary">Fix</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="ai-suggestions" role="tabpanel" aria-labelledby="ai-suggestions-tab">
+                        <div class="ai-suggestion">
+                            <h6>Code Optimization</h6>
+                            <p>Your loop in processItems() can be optimized with Array.map() for better performance.</p>
+                            <button class="btn btn-sm btn-outline-primary">Apply Suggestion</button>
+                        </div>
+                        <div class="ai-suggestion">
+                            <h6>Bug Detection</h6>
+                            <p>Potential null reference. Consider adding a null check before accessing properties.</p>
+                            <button class="btn btn-sm btn-outline-primary">Apply Fix</button>
+                        </div>
+                        <div class="ai-suggestion">
+                            <h6>Test Generation</h6>
+                            <p>Consider adding tests for edge cases in the calculateTotal() function.</p>
+                            <button class="btn btn-sm btn-outline-primary">Generate Tests</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="tests" role="tabpanel" aria-labelledby="tests-tab">
+                        <div class="test-results">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h6>Test Results</h6>
+                                <button class="btn btn-sm btn-success" id="runAllTestsBtn">Run All Tests</button>
+                            </div>
+                            <div class="test-summary mb-2">
+                                <span class="badge bg-success">10 Passed</span>
+                                <span class="badge bg-danger">2 Failed</span>
+                                <span class="badge bg-secondary">1 Skipped</span>
+                            </div>
+                            <div class="test-item">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="bi bi-check-circle text-success"></i> Should calculate total correctly</span>
+                                    <span>12ms</span>
+                                </div>
+                            </div>
+                            <div class="test-item mt-2">
+                                <div class="d-flex justify-content-between">
+                                    <span><i class="bi bi-x-circle text-danger"></i> Should handle empty arrays</span>
+                                    <span>8ms</span>
+                                </div>
+                                <div class="test-error text-danger mt-1">
+                                    Expected 0 but received null
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary mt-1">Fix Issue</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="ci" role="tabpanel" aria-labelledby="ci-tab">
+                        <div class="ci-pipeline">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h6>CI/CD Pipeline</h6>
+                                <button class="btn btn-sm btn-primary" id="triggerCiBtn">Trigger CI Pipeline</button>
+                            </div>
+                            <div class="build-status mb-3">
+                                <div class="progress build-progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 75%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <span>Build #12345 in progress</span>
+                                    <span>75%</span>
+                                </div>
+                            </div>
+                            <div class="pipeline-stages">
+                                <div class="stage-item d-flex justify-content-between">
+                                    <span><i class="bi bi-check-circle text-success"></i> Build</span>
+                                    <span>Completed (32s)</span>
+                                </div>
+                                <div class="stage-item d-flex justify-content-between mt-2">
+                                    <span><i class="bi bi-check-circle text-success"></i> Test</span>
+                                    <span>Completed (45s)</span>
+                                </div>
+                                <div class="stage-item d-flex justify-content-between mt-2">
+                                    <span><i class="bi bi-arrow-repeat text-primary"></i> Deploy</span>
+                                    <span>In Progress</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="me-auto">Ln 10, Col 15</div>
+        <div>JavaScript</div>
+        <div class="ms-3">UTF-8</div>
+        <div class="ms-3">Tab Size: 2</div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        AI suggestion: Consider optimizing your loop with Array.map()
+    </div>
+
+    <!-- AI Code Generation Modal -->
+    <div class="modal fade" id="aiGenerateModal" tabindex="-1" aria-labelledby="aiGenerateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiGenerateModalLabel">AI Code Generation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="promptTextarea" class="form-label">Describe what you want to generate</label>
+                        <textarea class="form-control" id="promptTextarea" rows="3" placeholder="E.g., Create a function that sorts an array of objects by a specified property"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Generated Code</label>
+                        <div class="form-control generated-code-preview" style="height: 200px; overflow-y: auto;">
+                            <pre><code id="generatedCodePreview">// Generated code will appear here</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="regenerateBtn">Regenerate</button>
+                    <button type="button" class="btn btn-success" id="insertCodeBtn">Insert Code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CI/CD Settings Modal -->
+    <div class="modal fade" id="ciSettingsModal" tabindex="-1" aria-labelledby="ciSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ciSettingsModalLabel">CI/CD Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="ciProviderSelect" class="form-label">CI Provider</label>
+                        <select class="form-select" id="ciProviderSelect">
+                            <option value="github">GitHub Actions</option>
+                            <option value="gitlab">GitLab CI</option>
+                            <option value="jenkins">Jenkins</option>
+                            <option value="travis">Travis CI</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="buildCommandInput" class="form-label">Build Command</label>
+                        <input type="text" class="form-control" id="buildCommandInput" value="npm run build">
+                    </div>
+                    <div class="mb-3">
+                        <label for="testCommandInput" class="form-label">Test Command</label>
+                        <input type="text" class="form-control" id="testCommandInput" value="npm test">
+                    </div>
+                    <div class="mb-3">
+                        <label for="deployCommandInput" class="form-label">Deploy Command</label>
+                        <input type="text" class="form-control" id="deployCommandInput" value="npm run deploy">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoDeploySwitch" checked>
+                            <label class="form-check-label" for="autoDeploySwitch">Auto-deploy on successful build</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="notificationsSwitch" checked>
+                            <label class="form-check-label" for="notificationsSwitch">Email notifications</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCiSettingsBtn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Modal -->
+    <div class="modal fade" id="debugModal" tabindex="-1" aria-labelledby="debugModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="debugModalLabel">AI Debug Assistant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Issue Analysis</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <p><strong>Problem detected:</strong> ReferenceError: calculateTotal is not defined at line 19</p>
+                                    <p><strong>Analysis:</strong> The function <code>calculateTotal()</code> is called but it was never defined in the scope. This is likely due to a missing import or a typo in the function name.</p>
+                                    <p><strong>Explanation:</strong> The error occurs when processing an array of items and trying to calculate their total value.</p>
+                                    <hr>
+                                    <p><strong>Suggested fix:</strong> Define the missing function or import it from the correct module. Based on the code context, it appears this function should calculate the sum of values in an array.</p>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <h6>Other possible fixes:</h6>
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Rename to existing function</h6>
+                                            <small>Simple</small>
+                                        </div>
+                                        <p class="mb-1">Change <code>calculateTotal</code> to <code>calculateSum</code> which exists in the codebase.</p>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Import from different file</h6>
+                                            <small>Recommended</small>
+                                        </div>
+                                        <p class="mb-1">Add import for calculateTotal function from another js module.</p>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Fix Preview</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre><code class="language-javascript">
+// Original code
+function processItems(items) {
+  const total = calculateTotal(items); // Error here
+  return total * 1.1; // Add 10% tax
+}
+
+// Fixed code
+import { calculateTotal } from './utils.js';
+
+function processItems(items) {
+  const total = calculateTotal(items); // Now properly imported
+  return total * 1.1; // Add 10% tax
+}
+                                    </code></pre>
+                                    <button class="btn btn-success mt-2" id="applyFixBtn">Apply Fix</button>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <h6>Similar Issues</h6>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Missing import for formatCurrency
+                                        <button class="btn btn-sm btn-outline-primary">Fix</button>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Undefined variable 'config' in initApp
+                                        <button class="btn btn-sm btn-outline-primary">Fix</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="applyAndCloseBtn">Apply Fix & Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="/src/components/aifeatures.js"></script>
+    <script src="/src/components/editor.js"></script>
+    <script src="/src/components/fileManager.js"></script>
+    <script src="/src/script.js"></script>
+    <!-- <script src="script.js"></script>
+    <script src="aifeatures.js"></script>
+    <script src="editor.js"></script>
+    <script src="fileManager.js"></script> -->
+</body>
+</html>
+</antArtifact>
